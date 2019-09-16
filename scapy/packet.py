@@ -15,6 +15,7 @@ import itertools
 import copy
 import types
 import warnings
+from collections import OrderedDict
 
 from scapy.fields import StrField, ConditionalField, Emph, PacketListField, \
     BitField, MultiEnumField, EnumField, FlagsField, MultipleTypeField
@@ -91,12 +92,14 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
     @classmethod
     def upper_bonds(self):
         for fval, upper in self.payload_guess:
-            print("%-20s  %s" % (upper.__name__, ", ".join("%-12s" % ("%s=%r" % i) for i in six.iteritems(fval))))  # noqa: E501
+            print("%-20s  %s" % (
+                upper.__name__, ", ".join("%-12s" % ("%s=%r" % i) for i in six.iteritems(fval))))  # noqa: E501
 
     @classmethod
     def lower_bonds(self):
         for lower, fval in six.iteritems(self._overload_fields):
-            print("%-20s  %s" % (lower.__name__, ", ".join("%-12s" % ("%s=%r" % i) for i in six.iteritems(fval))))  # noqa: E501
+            print("%-20s  %s" % (
+                lower.__name__, ", ".join("%-12s" % ("%s=%r" % i) for i in six.iteritems(fval))))  # noqa: E501
 
     def _unpickle(self, dlist):
         """Used to unpack pickling"""
@@ -398,7 +401,7 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
 
     def delfieldval(self, attr):
         if attr in self.fields:
-            del(self.fields[attr])
+            del (self.fields[attr])
             self.explicit = 0  # in case a default value must be explicit
             self.raw_packet_cache = None
             self.raw_packet_cache_fields = None
@@ -496,6 +499,7 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
             return self / conf.raw_layer(load=other)
         else:
             return other.__rdiv__(self)
+
     __truediv__ = __div__
 
     def __rdiv__(self, other):
@@ -503,6 +507,7 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
             return conf.raw_layer(load=other) / self
         else:
             raise TypeError
+
     __rtruediv__ = __rdiv__
 
     def __mul__(self, other):
@@ -516,6 +521,7 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
 
     def __nonzero__(self):
         return True
+
     __bool__ = __nonzero__
 
     def __len__(self):
@@ -645,13 +651,13 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
 
     def build_ps(self, internal=0):
         p, lst = self.do_build_ps()
-#        if not internal:
-#            pkt = self
-#            while pkt.haslayer(conf.padding_layer):
-#                pkt = pkt.getlayer(conf.padding_layer)
-#                lst.append( (pkt, [ ("loakjkjd", pkt.load, pkt.load) ] ) )
-#                p += pkt.load
-#                pkt = pkt.payload
+        #        if not internal:
+        #            pkt = self
+        #            while pkt.haslayer(conf.padding_layer):
+        #                pkt = pkt.getlayer(conf.padding_layer)
+        #                lst.append( (pkt, [ ("loakjkjd", pkt.load, pkt.load) ] ) )
+        #                p += pkt.load
+        #                pkt = pkt.payload
         return p, lst
 
     def canvas_dump(self, layer_shift=0, rebuild=1):
@@ -677,13 +683,15 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
 
         backcolor = colgen(0.6, 0.8, 1.0, trans=pyx.color.rgb)
         forecolor = colgen(0.2, 0.5, 0.8, trans=pyx.color.rgb)
-#        backcolor=makecol(0.376, 0.729, 0.525, 1.0)
+
+        #        backcolor=makecol(0.376, 0.729, 0.525, 1.0)
 
         def hexstr(x):
             return " ".join("%02x" % orb(c) for c in x)
 
         def make_dump_txt(x, y, txt):
-            return pyx.text.text(XDSTART + x * XMUL, (YDUMP - y) * YMUL, r"\tt{%s}" % hexstr(txt), [pyx.text.size.Large])  # noqa: E501
+            return pyx.text.text(XDSTART + x * XMUL, (YDUMP - y) * YMUL, r"\tt{%s}" % hexstr(txt),
+                                 [pyx.text.size.Large])  # noqa: E501
 
         def make_box(o):
             return pyx.box.rect(o.left(), o.bottom(), o.width(), o.height(), relcenter=(0.5, 0.5))  # noqa: E501
@@ -723,7 +731,7 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
                                          pyx.path.lineto(lb.left(), lb.bottom()),  # noqa: E501
                                          pyx.path.lineto(lb.left(), gb.top()),
                                          pyx.path.lineto(fb.left(), gb.top()),
-                                         pyx.path.closepath(),)
+                                         pyx.path.closepath(), )
 
         def make_dump(s, shift=0, y=0, col=None, bkcol=None, large=16):
             c = pyx.canvas.canvas()
@@ -750,7 +758,9 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
             bkcol = next(backcolor)
             proto, fields = t.pop()
             y += 0.5
-            pt = pyx.text.text(XSTART, (YTXT - y) * YMUL, r"\font\cmssfont=cmss10\cmssfont{%s}" % tex_escape(proto.name), [pyx.text.size.Large])  # noqa: E501
+            pt = pyx.text.text(XSTART, (YTXT - y) * YMUL,
+                               r"\font\cmssfont=cmss10\cmssfont{%s}" % tex_escape(proto.name),
+                               [pyx.text.size.Large])  # noqa: E501
             y += 1
             ptbb = pt.bbox()
             ptbb.enlarge(pyx.unit.u_pt * 2)
@@ -758,7 +768,8 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
             canvas.insert(pt)
             for field, fval, fdump in fields:
                 col = next(forecolor)
-                ft = pyx.text.text(XSTART, (YTXT - y) * YMUL, r"\font\cmssfont=cmss10\cmssfont{%s}" % tex_escape(field.name))  # noqa: E501
+                ft = pyx.text.text(XSTART, (YTXT - y) * YMUL,
+                                   r"\font\cmssfont=cmss10\cmssfont{%s}" % tex_escape(field.name))  # noqa: E501
                 if isinstance(field, BitField):
                     fsize = '%sb' % field.size
                 else:
@@ -767,13 +778,16 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
                         'LE' in field.field.__class__.__name__[:3] or
                         'LE' in field.__class__.__name__[:3]):
                     fsize = r'$\scriptstyle\langle$' + fsize
-                st = pyx.text.text(XSTART + 3.4, (YTXT - y) * YMUL, r"\font\cmbxfont=cmssbx10 scaled 600\cmbxfont{%s}" % fsize, [pyx.text.halign.boxright])  # noqa: E501
+                st = pyx.text.text(XSTART + 3.4, (YTXT - y) * YMUL,
+                                   r"\font\cmbxfont=cmssbx10 scaled 600\cmbxfont{%s}" % fsize,
+                                   [pyx.text.halign.boxright])  # noqa: E501
                 if isinstance(fval, str):
                     if len(fval) > 18:
                         fval = fval[:18] + "[...]"
                 else:
                     fval = ""
-                vt = pyx.text.text(XSTART + 3.5, (YTXT - y) * YMUL, r"\font\cmssfont=cmss10\cmssfont{%s}" % tex_escape(fval))  # noqa: E501
+                vt = pyx.text.text(XSTART + 3.5, (YTXT - y) * YMUL,
+                                   r"\font\cmssfont=cmss10\cmssfont{%s}" % tex_escape(fval))  # noqa: E501
                 y += 1.0
                 if fdump:
                     dt, target, last_shift, last_y = make_dump(fdump, last_shift, last_y, col, bkcol)  # noqa: E501
@@ -860,7 +874,8 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
                     if issubtype(cls, Packet):
                         log_runtime.error("%s dissector failed" % cls.__name__)
                     else:
-                        log_runtime.error("%s.guess_payload_class() returned [%s]" % (self.__class__.__name__, repr(cls)))  # noqa: E501
+                        log_runtime.error("%s.guess_payload_class() returned [%s]" % (
+                            self.__class__.__name__, repr(cls)))  # noqa: E501
                     if cls is not None:
                         raise
                 p = conf.raw_layer(s, _internal=1, _underlayer=self)
@@ -940,11 +955,13 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
             # This binds the subpacket .sent_time to this layer
             def _up_time(x, parent=self):
                 parent.sent_time = x
+
             pkt.update_sent_time = _up_time
         return pkt
 
     def __iter__(self):
         """Iterates through all sub-packets generated by this Packet."""
+
         # We use __iterlen__ as low as possible, to lower processing time
         def loop(todo, done, self=self):
             if todo:
@@ -992,7 +1009,7 @@ class Packet(six.with_metaclass(Packet_metaclass, BasePacket,
     def __iterlen__(self):
         """Predict the total length of the iterator"""
         fields = [key for (key, val) in itertools.chain(six.iteritems(self.default_fields),  # noqa: E501
-                  six.iteritems(self.overloaded_fields))
+                                                        six.iteritems(self.overloaded_fields))
                   if isinstance(val, VolatileValue)] + list(self.fields)
         length = 1
 
@@ -1120,7 +1137,7 @@ values.
         else:
             ccls, fld = cls, None
         if cls is None or match(self.__class__, cls) \
-           or ccls in [self.__class__.__name__, self._name]:
+                or ccls in [self.__class__.__name__, self._name]:
             if all(self.getfieldval(fldname) == fldvalue
                    for fldname, fldvalue in six.iteritems(flt)):
                 if nb == 1:
@@ -1172,7 +1189,7 @@ values.
         return ret
 
     def __delitem__(self, cls):
-        del(self[cls].underlayer.payload)
+        del (self[cls].underlayer.payload)
 
     def __setitem__(self, cls, val):
         self[cls].underlayer.payload = val
@@ -1190,6 +1207,41 @@ values.
     def display(self, *args, **kargs):  # Deprecated. Use show()
         """Deprecated. Use show() method."""
         self.show(*args, **kargs)
+
+    def to_list(self, first_call=True):  # noqa: E501
+        """
+        Internal method that shows or dumps a hierarchical view of a packet.
+        Called by show.
+
+        :param first_call: determine if the current function is the first
+        :return: return a hierarchical view if dump, else print it
+        """
+
+        result = []
+
+        current_layer = []
+        result.append(tuple([self.name, current_layer]))
+        for f in self.fields_desc:
+            if isinstance(f, ConditionalField) and not f._evalcond(self):
+                continue
+            fvalue = self.getfieldval(f.name)
+            if isinstance(fvalue, Packet) or (f.islist and f.holds_packets and isinstance(fvalue, list)):  # noqa: E501
+                reprval = []
+                fvalue_gen = SetGen(fvalue, _iterpacket=0)
+                for fvalue in fvalue_gen:
+                    current_value.append(fvalue.to_list(first_call=False))  # noqa: E501
+            else:
+                current_value = fvalue
+                reprval = f.i2repr(self, fvalue)
+            current_layer.append((f.name, dict(
+                value=fvalue,
+                reprval=reprval,
+                size=int(f.i2len(self, fvalue) * 8)
+            )))
+        if self.payload:
+            result.append(self.payload.to_list(first_call=False))  # noqa: E501
+
+        return result
 
     def _show_or_dump(self, dump=False, indent=3, lvl="", label_lvl="", first_call=True):  # noqa: E501
         """
@@ -1227,7 +1279,8 @@ values.
                 s += "%s  \\%-10s\\\n" % (label_lvl + lvl, ncol(f.name))
                 fvalue_gen = SetGen(fvalue, _iterpacket=0)
                 for fvalue in fvalue_gen:
-                    s += fvalue._show_or_dump(dump=dump, indent=indent, label_lvl=label_lvl + lvl + "   |", first_call=False)  # noqa: E501
+                    s += fvalue._show_or_dump(dump=dump, indent=indent, label_lvl=label_lvl + lvl + "   |",
+                                              first_call=False)  # noqa: E501
             else:
                 begn = "%s  %-10s%s " % (label_lvl + lvl,
                                          ncol(f.name),
@@ -1240,7 +1293,8 @@ values.
                                                                   4))
                 s += "%s%s\n" % (begn, vcol(reprval))
         if self.payload:
-            s += self.payload._show_or_dump(dump=dump, indent=indent, lvl=lvl + (" " * indent * self.show_indent), label_lvl=label_lvl, first_call=False)  # noqa: E501
+            s += self.payload._show_or_dump(dump=dump, indent=indent, lvl=lvl + (" " * indent * self.show_indent),
+                                            label_lvl=label_lvl, first_call=False)  # noqa: E501
 
         if first_call and not dump:
             print(s)
@@ -1366,7 +1420,8 @@ values.
                 raise Scapy_Exception("Bad format string [%%%s%s]" % (fmt[:25], fmt[25:] and "..."))  # noqa: E501
             else:
                 if fld == "time":
-                    val = time.strftime("%H:%M:%S.%%06i", time.localtime(self.time)) % int((self.time - int(self.time)) * 1000000)  # noqa: E501
+                    val = time.strftime("%H:%M:%S.%%06i", time.localtime(self.time)) % int(
+                        (self.time - int(self.time)) * 1000000)  # noqa: E501
                 elif cls == self.__class__.__name__ and hasattr(self, fld):
                     if num > 1:
                         val = self.payload.sprintf("%%%s,%s:%s.%s%%" % (f, cls, num - 1, fld), relax)  # noqa: E501
@@ -1569,6 +1624,7 @@ class NoPayload(Packet):
 
     def __nonzero__(self):
         return False
+
     __bool__ = __nonzero__
 
     def do_build(self):
@@ -1662,10 +1718,11 @@ class Raw(Packet):
 
     def answers(self, other):
         return 1
-#        s = raw(other)
-#        t = self.load
-#        l = min(len(s), len(t))
-#        return  s[:l] == t[:l]
+
+    #        s = raw(other)
+    #        t = self.load
+    #        l = min(len(s), len(t))
+    #        return  s[:l] == t[:l]
 
     def mysummary(self):
         cs = conf.raw_summary
@@ -1696,6 +1753,7 @@ conf.raw_layer = Raw
 conf.padding_layer = Padding
 if conf.default_l2 is None:
     conf.default_l2 = Raw
+
 
 #################
 #  Bind layers  #
@@ -1767,6 +1825,7 @@ def split_bottom_up(lower, upper, __fval=None, **fval):
             k not in params or params[k] != v for k, v in six.iteritems(fval)
         )
         return cls != upper or params_is_invalid
+
     lower.payload_guess = [x for x in lower.payload_guess if do_filter(*x)]
 
 
@@ -1781,7 +1840,7 @@ def split_top_down(lower, upper, __fval=None, **fval):
         if any(k not in ofval or ofval[k] != v for k, v in six.iteritems(fval)):  # noqa: E501
             return
         upper._overload_fields = upper._overload_fields.copy()
-        del(upper._overload_fields[lower])
+        del (upper._overload_fields[lower])
 
 
 @conf.commands.register
@@ -1962,7 +2021,7 @@ def ls(obj=None, case_sensitive=False, verbose=False):
                                  if (isinstance(layer.__name__, str) and
                                      pattern.search(layer.__name__)) or
                                  (isinstance(layer.name, str) and
-                                     pattern.search(layer.name))),
+                                  pattern.search(layer.name))),
                                 key=sorter)
         for layer in all_layers:
             print("%-10s : %s" % (layer.__name__, layer._name))
@@ -1981,7 +2040,7 @@ def ls(obj=None, case_sensitive=False, verbose=False):
                         attrs.append(cur_fld.__class__.__name__[:4])
                     cur_fld = cur_fld.fld
                 if verbose and isinstance(cur_fld, EnumField) \
-                   and hasattr(cur_fld, "i2s"):
+                        and hasattr(cur_fld, "i2s"):
                     if len(cur_fld.i2s) < 50:
                         long_attrs.extend(
                             "%s: %d" % (strval, numval)
